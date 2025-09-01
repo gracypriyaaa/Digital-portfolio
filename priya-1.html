@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portfolio Builder with PDF Export</title>
+<!-- html2pdf.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+<style>
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background: #121212;
+  color: #f0f0f0;
+  margin: 0;
+  padding: 30px 10px;
+}
+h1, h2, h3, h4 {
+  color: #ff4081;
+  text-align: center;
+  margin: 0 0 15px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.container {
+  max-width: 900px;
+  background: #1e1e1e;
+  margin: 0 auto 30px auto;
+  padding: 32px 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(255,64,129,0.15);
+  border: 2px solid #ff4081;
+  transition: transform 0.3s ease;
+}
+.container:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 40px rgba(255,64,129,0.35);
+}
+.profile-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 25px auto;
+  border: 4px solid #ff4081;
+  box-shadow: 0 0 12px #ff4081a1;
+  display: block;
+  transition: box-shadow 0.3s ease;
+}
+.profile-photo:hover {
+  box-shadow: 0 0 20px #ff4081f0;
+}
+.section {
+  margin-top: 28px;
+}
+label {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: #ff80ab;
+  text-transform: uppercase;
+}
+input[type=text], input[type=number], textarea {
+  width: 100%;
+  background: #2a2a2a;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 30px;
+  color: #f0f0f0;
+  font-size: 16px;
+  box-shadow: inset 2px 2px 5px #1c1c1c, inset -2px -2px 5px #3a3a3a;
+  transition: box-shadow 0.3s ease;
+  resize: vertical;
+  min-height: 70px;
+}
+input[type=text]:focus, input[type=number]:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 12px #ff4081;
+  background: #3d003d;
+  color: #fff;
+}
+input[type=file] {
+  display: none;
+}
+.custom-file-upload {
+  cursor: pointer;
+  background: #ff4081;
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 45px;
+  font-weight: 700;
+  display: inline-block;
+  letter-spacing: 0.15em;
+  transition: background 0.3s ease;
+  text-align: center;
+  text-transform: uppercase;
+  user-select: none;
+  margin-top: 0;
+}
+.custom-file-upload:hover {
+  background: #e5006b;
+}
+button {
+  background: #ff4081;
+  border: none;
+  width: 100%;
+  padding: 18px;
+  margin-top: 28px;
+  font-size: 18px;
+  font-weight: 900;
+  border-radius: 40px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px #ff4081bb;
+  transition: background 0.25s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #fff;
+}
+button:hover {
+  background: #e5006b;
+  box-shadow: 0 0 25px #ff4081ff;
+}
+#portfolioView {
+  display: none;
+  color: #eee;
+}
+.project-container, .achievement-container {
+  background: #292929;
+  border-radius: 20px;
+  padding: 25px 30px;
+  margin-top: 20px;
+  position: relative;
+  box-shadow: 0 5px 15px #000000aa;
+}
+
+/* UPDATED Cross Button - Transparent Rounded with Pink Border */
+.remove-project-btn, .remove-achievement-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: 2px solid #ff4081;
+  color: #ff4081;
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  border-radius: 50%;
+  line-height: 26px;
+  cursor: pointer;
+  box-shadow: none;
+  font-weight: 700;
+  transition: background 0.3s ease, color 0.3s ease;
+  text-align: center;
+}
+.remove-project-btn:hover, .remove-achievement-btn:hover {
+  background: #ff4081;
+  color: white;
+  box-shadow: 0 0 10px #ff4081cc;
+}
+
+.project-photo, .achievement-photo {
+  max-width: 190px;
+  border-radius: 20px;
+  display: block;
+  margin: 15px 0 0 0;
+  border: 3px solid #ff4081;
+  box-shadow: 0 0 10px #ff4081bb;
+}
+.back-button, .export-button {
+  display: inline-block;
+  width: auto;
+  padding: 12px 26px;
+  border-radius: 40px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin: 0 12px 22px 0;
+  box-shadow: 0 4px 12px #ff4081bb;
+  border: none;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.back-button {
+  background: #3b3b3b;
+  color: #f0f0f0;
+}
+.back-button:hover {
+  background: #ff4081;
+  color: #fff;
+  box-shadow: 0 0 22px #ff4081ff;
+}
+.export-button {
+  background: #ff4081;
+  color: #fff;
+}
+.export-button:hover {
+  background: #b00027;
+  box-shadow: 0 0 25px #ff4081ff;
+}
+.clear-fix {
+  clear: both;
+}
+@media (max-width: 740px) {
+  body {
+    padding: 20px 5px;
+  }
+  .container {
+    padding: 18px 24px;
+    max-width: 100%;
+  }
+  .profile-photo {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 18px;
+  }
+  button, .custom-file-upload {
+    font-size: 14px;
+    padding: 12px 18px;
+  }
+  .remove-project-btn, .remove-achievement-btn  {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    line-height: 24px;
+  }
+}
+</style>
+
+</head>
+<body>
+
+<div id="portfolioForm" class="container">
+  <h1>Complete Portfolio Builder</h1>
+
+  <div class="section">
+    <label for="photoInput" class="custom-file-upload">Choose Profile Photo</label>
+    <input type="file" id="photoInput" accept="image/*" />
+  </div>
+
+  <div class="section">
+    <label for="nameInput">Name:</label>
+    <input type="text" id="nameInput" placeholder="Your full name" />
+  </div>
+
+  <div class="section">
+    <label for="ageInput">Age:</label>
+    <input type="number" id="ageInput" placeholder="Your age" />
+  </div>
+
+  <div class="section">
+    <label for="departmentInput">Department:</label>
+    <input type="text" id="departmentInput" placeholder="Your department" />
+  </div>
+
+  <div class="section">
+    <label for="educationInput">Education:</label>
+    <textarea id="educationInput" placeholder="Your educational background"></textarea>
+  </div>
+
+  <div class="section">
+    <label for="experienceInput">Experience:</label>
+    <textarea id="experienceInput" placeholder="Your work or project experience"></textarea>
+  </div>
+
+  <div class="section">
+    <label for="toolsInput">Tools:</label>
+    <textarea id="toolsInput" placeholder="Tools and technologies you use"></textarea>
+  </div>
+
+  <div class="section">
+    <label for="skillsInput">Skills:</label>
+    <textarea id="skillsInput" placeholder="Your key skills"></textarea>
+  </div>
+
+  <div class="section">
+    <label for="objectiveInput">Objective:</label>
+    <textarea id="objectiveInput" placeholder="Your career or project objective"></textarea>
+  </div>
+
+  <h2>Projects</h2>
+  <div id="projectsContainer"></div>
+  <button id="addProjectBtn" type="button">+ Add Project</button>
+
+  <h2>Achievements</h2>
+  <div id="achievementsContainer"></div>
+  <button id="addAchievementBtn" type="button">+ Add Achievement</button>
+
+  <button onclick="savePortfolio()">Save & View Portfolio</button>
+</div>
+
+<div id="portfolioView" class="container">
+  <button class="back-button" onclick="backToForm()">Back to Edit</button>
+  <button class="export-button" onclick="exportPortfolioAsPDF()">Download PDF</button>
+  <div class="clear-fix"></div>
+
+  <div id="portfolioContent">
+    <img id="displayPhoto" class="profile-photo" alt="Profile Photo" />
+    <h1 id="displayName"></h1>
+    <p><strong>Age:</strong> <span id="displayAge"></span></p>
+    <p><strong>Department:</strong> <span id="displayDepartment"></span></p>
+
+    <section>
+      <h3>Education</h3>
+      <p id="displayEducation"></p>
+    </section>
+
+    <section>
+      <h3>Experience</h3>
+      <p id="displayExperience"></p>
+    </section>
+
+    <section>
+      <h3>Tools</h3>
+      <p id="displayTools"></p>
+    </section>
+
+    <section>
+      <h3>Skills</h3>
+      <p id="displaySkills"></p>
+    </section>
+
+    <section>
+      <h3>Objective</h3>
+      <p id="displayObjective"></p>
+    </section>
+
+    <section id="displayProjectsSection">
+      <h3>Projects</h3>
+      <div id="displayProjects"></div>
+    </section>
+
+    <section>
+      <h3>Achievements</h3>
+      <div id="displayAchievements"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+window.onload = function() {
+  if(document.getElementById('projectsContainer').children.length === 0) {
+    addProject();
+  }
+  if(document.getElementById('achievementsContainer').children.length === 0) {
+    addAchievement();
+  }
+  if(localStorage.getItem('portfolioName')) {
+    restoreFormData();
+    displayPortfolio();
+    switchToView();
+  }
+};
+
+function addProject(title = '', desc = '') {
+  const container = document.getElementById('projectsContainer');
+  const projectDiv = document.createElement('div');
+  projectDiv.classList.add('project-container');
+  container.appendChild(projectDiv);
+  rebuildProjects();
+}
+function rebuildProjects() {
+  const container = document.getElementById('projectsContainer');
+  const projects = Array.from(container.children);
+  if (projects.length === 0) {
+    createProjectForm('', '', 1);
+    return;
+  }
+  const tempData = projects.map(proj => ({
+    title: proj.querySelector('input[type="text"]')?.value || '',
+    desc: proj.querySelector('textarea')?.value || ''
+  }));
+  container.innerHTML = '';
+  tempData.forEach((data, i) => {
+    createProjectForm(data.title, data.desc, i + 1);
+  });
+}
+function createProjectForm(title, desc, number) {
+  const container = document.getElementById('projectsContainer');
+  const div = document.createElement('div');
+  div.classList.add('project-container');
+  div.innerHTML = `
+    <label for="projectTitle${number}">Project ${number} Title:</label>
+    <input type="text" id="projectTitle${number}" placeholder="Project title" value="${title}" />
+    <label for="projectDesc${number}">Project ${number} Description:</label>
+    <textarea id="projectDesc${number}" placeholder="Project description">${desc}</textarea>
+    <label for="projectPhoto${number}" class="custom-file-upload">Upload Project ${number} Photo</label>
+    <input type="file" id="projectPhoto${number}" accept="image/*" />
+    <button type="button" class="remove-project-btn" onclick="removeProject(this)">×</button>
+  `;
+  container.appendChild(div);
+}
+function removeProject(button) {
+  const container = document.getElementById('projectsContainer');
+  if (container.children.length > 1) {
+    button.parentElement.remove();
+    rebuildProjects();
+  } else {
+    alert('At least one project is required.');
+  }
+}
+function addAchievement(title = '', desc = '') {
+  const container = document.getElementById('achievementsContainer');
+  const div = document.createElement('div');
+  div.classList.add('achievement-container');
+  div.innerHTML = `
+    <label for="achievementTitle${container.children.length + 1}">Achievement ${container.children.length + 1} Title:</label>
+    <input type="text" id="achievementTitle${container.children.length + 1}" placeholder="Achievement title" value="${title}" />
+    <label for="achievementDesc${container.children.length + 1}">Achievement ${container.children.length + 1} Description:</label>
+    <textarea id="achievementDesc${container.children.length + 1}" placeholder="Achievement description">${desc}</textarea>
+    <label for="achievementPhoto${container.children.length + 1}" class="custom-file-upload">Upload Achievement ${container.children.length + 1} Photo (optional)</label>
+    <input type="file" id="achievementPhoto${container.children.length + 1}" accept="image/*" />
+    <button type="button" class="remove-achievement-btn" onclick="removeAchievement(this)">×</button>
+  `;
+  container.appendChild(div);
+}
+function removeAchievement(button) {
+  const container = document.getElementById('achievementsContainer');
+  if (container.children.length > 1) {
+    button.parentElement.remove();
+  } else {
+    alert('At least one achievement is required.');
+  }
+}
+function savePortfolio() {
+  const profilePhotoInput = document.getElementById('photoInput');
+  const name = document.getElementById('nameInput').value.trim();
+  const age = document.getElementById('ageInput').value.trim();
+  const department = document.getElementById('departmentInput').value.trim();
+  const education = document.getElementById('educationInput').value.trim();
+  const experience = document.getElementById('experienceInput').value.trim();
+  const tools = document.getElementById('toolsInput').value.trim();
+  const skills = document.getElementById('skillsInput').value.trim();
+  const objective = document.getElementById('objectiveInput').value.trim();
+
+  if (!profilePhotoInput.files[0]) {
+    alert('Please upload your profile photo.');
+    return;
+  }
+  if (!name) {
+    alert('Please enter your name.');
+    return;
+  }
+  saveProjectsAndAchievements(() => {
+    const profileReader = new FileReader();
+    profileReader.onload = function(event) {
+      const profilePhoto = event.target.result;
+      localStorage.setItem('portfolioPhoto', profilePhoto);
+      localStorage.setItem('portfolioName', name);
+      localStorage.setItem('portfolioAge', age);
+      localStorage.setItem('portfolioDepartment', department);
+      localStorage.setItem('portfolioEducation', education);
+      localStorage.setItem('portfolioExperience', experience);
+      localStorage.setItem('portfolioTools', tools);
+      localStorage.setItem('portfolioSkills', skills);
+      localStorage.setItem('portfolioObjective', objective);
+      restoreFormData();
+      displayPortfolio();
+      switchToView();
+    };
+    profileReader.readAsDataURL(profilePhotoInput.files[0]);
+  });
+}
+function saveProjectsAndAchievements(callback) {
+  const achievementsContainer = document.getElementById('achievementsContainer');
+  const achievementDivs = achievementsContainer.querySelectorAll('.achievement-container');
+  const achievementPromises = [];
+
+  achievementDivs.forEach((div, i) => {
+    const num = i + 1;
+    const title = div.querySelector(`#achievementTitle${num}`)?.value.trim() || '';
+    const desc = div.querySelector(`#achievementDesc${num}`)?.value.trim() || '';
+    const photoInput = div.querySelector(`#achievementPhoto${num}`);
+    if (!title && !desc && (!photoInput.files || !photoInput.files[0])) return;
+    achievementPromises.push(new Promise((resolve) => {
+      if (photoInput.files && photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ title, description: desc, photo: e.target.result });
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        const existing = JSON.parse(localStorage.getItem('portfolioAchievementsArray') || '[]').find(a => a.title === title && a.description === desc);
+        resolve({ title, description: desc, photo: existing ? existing.photo : '' });
+      }
+    }));
+  });
+
+  const projectsContainer = document.getElementById('projectsContainer');
+  const projectDivs = projectsContainer.querySelectorAll('.project-container');
+  const projectPromises = [];
+
+  projectDivs.forEach((div, i) => {
+    const num = i + 1;
+    const title = div.querySelector(`#projectTitle${num}`)?.value.trim() || '';
+    const desc = div.querySelector(`#projectDesc${num}`)?.value.trim() || '';
+    const photoInput = div.querySelector(`#projectPhoto${num}`);
+    if (!title && !desc && (!photoInput.files || !photoInput.files[0])) return;
+    projectPromises.push(new Promise((resolve) => {
+      if (photoInput.files && photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ title, description: desc, photo: e.target.result });
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        const existing = JSON.parse(localStorage.getItem('portfolioProjects') || '[]').find(p => p.title === title && p.description === desc);
+        resolve({ title, description: desc, photo: existing ? existing.photo : '' });
+      }
+    }));
+  });
+
+  Promise.all([Promise.all(achievementPromises), Promise.all(projectPromises)]).then(results => {
+    const [achievements, projects] = results;
+    localStorage.setItem('portfolioAchievementsArray', JSON.stringify(achievements));
+    localStorage.setItem('portfolioProjects', JSON.stringify(projects));
+    callback();
+  });
+}
+function restoreFormData() {
+  document.getElementById('nameInput').value = localStorage.getItem('portfolioName') || '';
+  document.getElementById('ageInput').value = localStorage.getItem('portfolioAge') || '';
+  document.getElementById('departmentInput').value = localStorage.getItem('portfolioDepartment') || '';
+  document.getElementById('educationInput').value = localStorage.getItem('portfolioEducation') || '';
+  document.getElementById('experienceInput').value = localStorage.getItem('portfolioExperience') || '';
+  document.getElementById('toolsInput').value = localStorage.getItem('portfolioTools') || '';
+  document.getElementById('skillsInput').value = localStorage.getItem('portfolioSkills') || '';
+  document.getElementById('objectiveInput').value = localStorage.getItem('portfolioObjective') || '';
+
+  const projects = JSON.parse(localStorage.getItem('portfolioProjects') || '[]');
+  const projectsContainer = document.getElementById('projectsContainer');
+  projectsContainer.innerHTML = '';
+  if (projects.length === 0) addProject();
+  else projects.forEach(p => addProject(p.title, p.description));
+
+  const achievements = JSON.parse(localStorage.getItem('portfolioAchievementsArray') || '[]');
+  const achievementsContainer = document.getElementById('achievementsContainer');
+  achievementsContainer.innerHTML = '';
+  if (achievements.length === 0) addAchievement();
+  else achievements.forEach(a => addAchievement(a.title, a.description));
+}
+function displayPortfolio() {
+  document.getElementById('displayPhoto').src = localStorage.getItem('portfolioPhoto') || '';
+  document.getElementById('displayName').textContent = localStorage.getItem('portfolioName') || '';
+  document.getElementById('displayAge').textContent = localStorage.getItem('portfolioAge') || '';
+  document.getElementById('displayDepartment').textContent = localStorage.getItem('portfolioDepartment') || '';
+  document.getElementById('displayEducation').textContent = localStorage.getItem('portfolioEducation') || '';
+  document.getElementById('displayExperience').textContent = localStorage.getItem('portfolioExperience') || '';
+  document.getElementById('displayTools').textContent = localStorage.getItem('portfolioTools') || '';
+  document.getElementById('displaySkills').textContent = localStorage.getItem('portfolioSkills') || '';
+  document.getElementById('displayObjective').textContent = localStorage.getItem('portfolioObjective') || '';
+
+  const displayAchievements = document.getElementById('displayAchievements');
+  displayAchievements.innerHTML = '';
+  const achievementsJson = localStorage.getItem('portfolioAchievementsArray');
+  if (achievementsJson) {
+    JSON.parse(achievementsJson).forEach((a, i) => {
+      if (!a) return;
+      const div = document.createElement('div');
+      div.classList.add('achievement-item');
+      const title = document.createElement('h4');
+      title.textContent = a.title || `Achievement ${i+1}`;
+      div.appendChild(title);
+      if (a.photo) {
+        const img = document.createElement('img');
+        img.src = a.photo;
+        img.alt = a.title || `Achievement ${i+1} Photo`;
+        img.classList.add('achievement-photo');
+        div.appendChild(img);
+      }
+      const desc = document.createElement('p');
+      desc.textContent = a.description || '';
+      div.appendChild(desc);
+      displayAchievements.appendChild(div);
+    });
+  }
+  const displayProjects = document.getElementById('displayProjects');
+  displayProjects.innerHTML = '';
+  const projectsJson = localStorage.getItem('portfolioProjects');
+  if (projectsJson) {
+    JSON.parse(projectsJson).forEach((p, i) => {
+      if (!p) return;
+      const div = document.createElement('div');
+      div.classList.add('project-item');
+      const title = document.createElement('h4');
+      title.textContent = p.title || `Project ${i+1}`;
+      div.appendChild(title);
+      if (p.photo) {
+        const img = document.createElement('img');
+        img.src = p.photo;
+        img.alt = p.title || `Project ${i+1} Photo`;
+        img.classList.add('project-photo');
+        div.appendChild(img);
+      }
+      const desc = document.createElement('p');
+      desc.textContent = p.description || '';
+      div.appendChild(desc);
+      displayProjects.appendChild(div);
+    });
+  }
+}
+function switchToView() {
+  document.getElementById('portfolioForm').style.display = 'none';
+  document.getElementById('portfolioView').style.display = 'block';
+  window.scrollTo(0,0);
+}
+function backToForm() {
+  document.getElementById('portfolioView').style.display = 'none';
+  document.getElementById('portfolioForm').style.display = 'block';
+  restoreFormData();
+}
+function exportPortfolioAsPDF() {
+  const element = document.getElementById('portfolioContent');
+  var opt = {
+    margin:     0.5,
+    filename:   'portfolio.pdf',
+    image:      { type: 'jpeg', quality: 0.98 },
+    html2canvas:{ scale: 2 },
+    jsPDF:      { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save();
+}
+document.getElementById('addProjectBtn').addEventListener('click', () => addProject());
+document.getElementById('addAchievementBtn').addEventListener('click', () => addAchievement());
+</script>
+
+</body>
+</html>
